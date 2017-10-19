@@ -5,6 +5,7 @@ import * as validator from 'validator'
 
 interface User {
   id: string
+  username: string
 }
 
 interface EventData {
@@ -44,12 +45,12 @@ export default async (event: FunctionEvent<EventData>) => {
     const hash = await bcrypt.hash(password, SALT_ROUNDS)
 
     // create new user
-    const userId = await createGraphcoolUser(api, email, hash, username)
+    const { id: userId, username: createdUsername } = await createGraphcoolUser(api, email, hash, username)
 
     // generate node token for new User node
     const token = await graphcool.generateNodeToken(userId, 'User')
 
-    return { data: { id: userId, token } }
+    return { data: { id: userId, token, username: createdUsername } }
   } catch (e) {
     console.log(e)
     return { error: 'An unexpected error occured during signup.' }
@@ -72,7 +73,7 @@ async function getUser(api: GraphQLClient, email: string): Promise<{ User }> {
   return api.request<{ User }>(query, variables)
 }
 
-async function createGraphcoolUser(api: GraphQLClient, email: string, password: string, username: String): Promise<string> {
+async function createGraphcoolUser(api: GraphQLClient, email: string, password: string, username: String): Promise<{ id, username }> {
   const mutation = `
     mutation createGraphcoolUser($email: String!, $password: String!, $username: String!) {
       createUser(
@@ -81,6 +82,7 @@ async function createGraphcoolUser(api: GraphQLClient, email: string, password: 
         username: $username
       ) {
         id
+        username
       }
     }
   `
@@ -92,5 +94,5 @@ async function createGraphcoolUser(api: GraphQLClient, email: string, password: 
   }
 
   return api.request<{ createUser: User }>(mutation, variables)
-    .then(r => r.createUser.id)
+    .then(r => ({ id: r.createUser.id, username: r.createUser.username }))
 }

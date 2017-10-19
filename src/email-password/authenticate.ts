@@ -5,6 +5,7 @@ import * as bcrypt from 'bcryptjs'
 interface User {
   id: string
   password: string
+  username: string
 }
 
 interface EventData {
@@ -41,7 +42,7 @@ export default async (event: FunctionEvent<EventData>) => {
     // generate node token for existing User node
     const token = await graphcool.generateNodeToken(user.id, 'User')
 
-    return { data: { id: user.id, token} }
+    return { data: { id: user.id, token, username: user.username} }
   } catch (e) {
     console.log(e)
     return { error: 'An unexpected error occured during authentication.' }
