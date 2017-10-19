@@ -1,0 +1,65 @@
+type File @model {
+  contentType: String!
+  createdAt: DateTime!
+  id: ID! @isUnique
+  name: String!
+  secret: String! @isUnique
+  size: Int!
+  updatedAt: DateTime!
+  url: String! @isUnique
+}
+
+# Pre-migration User model
+# type User @model {
+#   createdAt: DateTime!
+#   email: String @isUnique
+#   id: ID! @isUnique
+#   password: String
+#   updatedAt: DateTime!
+#   username: String! @isUnique
+#   chatrooms: [Chatroom!]! @relation(name: "UsersChatrooms")
+#   createdChatrooms: [Chatroom!]! @relation(name: "UserCreatedChatrooms")
+#   invitedChatrooms: [Chatroom!]! @relation(name: "UserInvitedChatroom")
+# }
+
+type Chatroom @model {
+  id: ID! @isUnique
+  title: String!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  createdBy: User @relation(name: "UserCreatedChatrooms")
+  users: [User!]! @relation(name: "UsersChatrooms")
+  messages: [Message!]! @relation(name: "ChatroomMessages")
+  stateType: Int! @defaultValue(value: 0)
+  numReported: Int! @defaultValue(value: 0)
+  lastInvitedAt: DateTime
+  invitedUser: User @relation(name: "UserInvitedChatroom")
+  latestMessagesAt: DateTime!
+  deniedByUserIds: [String!] @defaultValue(value: "[]")
+}
+
+type Message @model {
+  id: ID! @isUnique
+  createdAt: DateTime!
+  text: String!
+  chatroom: Chatroom! @relation(name: "ChatroomMessages")
+  createdByUserId: String!
+}
+
+type User @model {
+  # Required system field:
+  id: ID! @isUnique # read-only (managed by Graphcool)
+
+  # Optional system fields (remove if not needed):
+  createdAt: DateTime! # read-only (managed by Graphcool)
+  updatedAt: DateTime! # read-only (managed by Graphcool)
+
+  email: String! @isUnique
+  password: String!
+  username: String! @isUnique
+  chatrooms: [Chatroom!]! @relation(name: "UsersChatrooms")
+  createdChatrooms: [Chatroom!]! @relation(name: "UserCreatedChatrooms")
+  invitedChatrooms: [Chatroom!]! @relation(name: "UserInvitedChatroom")
+}
+
+
