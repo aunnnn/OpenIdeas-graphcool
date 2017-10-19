@@ -55,6 +55,7 @@ async function getUserByEmail(api: GraphQLClient, email: string): Promise<{ User
       User(email: $email) {
         id
         password
+        username
       }
     }
   `
