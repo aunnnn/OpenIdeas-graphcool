@@ -29,8 +29,8 @@ export default async (event: FunctionEvent<EventData>) => {
       return { error: 'Not a valid email' }
     }
 
-    if (!username || !/^([a-zA-Z0-9]){6,12}$/.test(username)) {
-      return { error: 'Username must be between 6-12 characters of numbers or letters.' }
+    if (!username || !/^([a-zA-Z0-9]){4,12}$/.test(username)) {
+      return { error: 'Username must be between 4-12 characters of numbers or letters.' }
     }
 
     // check if user exists already
@@ -38,6 +38,12 @@ export default async (event: FunctionEvent<EventData>) => {
       .then(r => r.User !== null)
     if (userExists) {
       return { error: 'Email already in use' }
+    }
+
+    const usernameExists: boolean = await getUserByUsername(api, username)
+      .then(r => r.User !== null)
+    if (usernameExists) {
+      return { error: 'Username already in use' }
     }
 
     // create password hash
@@ -68,6 +74,22 @@ async function getUser(api: GraphQLClient, email: string): Promise<{ User }> {
 
   const variables = {
     email,
+  }
+
+  return api.request<{ User }>(query, variables)
+}
+
+async function getUserByUsername(api: GraphQLClient, username: String): Promise<{ User }> {
+  const query = `
+    query getUser($username: String!) {
+      User(username: $username) {
+        id
+      }
+    }
+  `
+
+  const variables = {
+    username,
   }
 
   return api.request<{ User }>(query, variables)
