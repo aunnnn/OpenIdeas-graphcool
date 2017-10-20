@@ -63,3 +63,7 @@ type User @model {
 }
 
 
+
+# added by mailgun template: (please uncomment)
+# 
+

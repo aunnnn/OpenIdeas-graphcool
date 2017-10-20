@@ -1,5 +1,6 @@
 import { fromEvent, FunctionEvent } from 'graphcool-lib'
 import { GraphQLClient } from 'graphql-request'
+import fs from 'fs'
 import * as bcrypt from 'bcryptjs'
 import * as validator from 'validator'
 
@@ -16,8 +17,23 @@ interface EventData {
 
 const SALT_ROUNDS = 10
 
+function readFileAsync(path) {
+  return new Promise(function (resolve, reject) {
+    fs.readFile(path, 'utf8', function (error, result) {
+      if (error) {
+        reject(error);
+      } else {
+        resolve(result);
+      }
+    });
+  });
+}
+
 export default async (event: FunctionEvent<EventData>) => {
   console.log(event)
+
+  const template = await readFileAsync('/email-templates/email-confirm.html')
+  console.log('template is: ', template)
 
   try {
     const graphcool = fromEvent(event)
@@ -61,6 +77,16 @@ export default async (event: FunctionEvent<EventData>) => {
     console.log(e)
     return { error: 'An unexpected error occured during signup.' }
   }
+}
+
+async function sendConfirmationEmail(api: GraphQLClient, email: string): Promise<boolean> {
+  const mutation = `
+    mutation sendEmail {
+      sendMailgunEmail {
+        tag
+      }
+    }
+  `
 }
 
 async function getUser(api: GraphQLClient, email: string): Promise<{ User }> {

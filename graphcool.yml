@@ -1,5 +1,18 @@
 types: ./types.graphql
 functions:
+
+# added by mailgun template: (please uncomment)
+
+  sendEmail:
+    handler:
+      code:
+        src: ./src/mailgun/sendEmail.ts
+        environment:
+          MAILGUN_API_KEY: ${env:MAILGUN_API_KEY}
+          MAILGUN_DOMAIN: ${env:MAILGUN_DOMAIN}
+    type: resolver
+    schema: ./src/mailgun/sendEmail.graphql
+
 # added by email-password template: (please uncomment)
 
   signup:

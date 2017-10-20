@@ -1,0 +1,15 @@
+type MailgunEmailPayload {
+  success: Boolean!
+}
+
+extend type Mutation {
+  sendMailgunEmail(
+    tag: String!
+    from: String!
+    to: [String!]!
+    subject: String!
+    text: String!
+    html: String!
+    recipientVariables: Json
+  ): MailgunEmailPayload
+}
