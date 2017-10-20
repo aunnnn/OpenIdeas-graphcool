@@ -15,6 +15,7 @@
     "@types/validator": "^6.3.0",
     "bcryptjs": "^2.4.3",
     "form-data": "^2.3.1",
+    "fs": "0.0.1-security",
     "graphcool-lib": "^0.1.0",
     "graphql-request": "^1.4.0",
     "isomorphic-fetch": "^2.2.1",

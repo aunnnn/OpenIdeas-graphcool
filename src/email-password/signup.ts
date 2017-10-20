@@ -1,6 +1,5 @@
 import { fromEvent, FunctionEvent } from 'graphcool-lib'
 import { GraphQLClient } from 'graphql-request'
-import fs from 'fs'
 import * as bcrypt from 'bcryptjs'
 import * as validator from 'validator'
 
@@ -15,7 +14,13 @@ interface EventData {
   username: string
 }
 
+interface sendMailgunEmail {
+  success: boolean
+}
+
 const SALT_ROUNDS = 10
+
+const fs = require('fs')
 
 function readFileAsync(path) {
   return new Promise(function (resolve, reject) {
@@ -32,10 +37,8 @@ function readFileAsync(path) {
 export default async (event: FunctionEvent<EventData>) => {
   console.log(event)
 
-  const template = await readFileAsync('/email-templates/email-confirm.html')
-  console.log('template is: ', template)
-
   try {
+
     const graphcool = fromEvent(event)
     const api = graphcool.api('simple/v1')
 
@@ -72,21 +75,58 @@ export default async (event: FunctionEvent<EventData>) => {
     // generate node token for new User node
     const token = await graphcool.generateNodeToken(userId, 'User')
 
+    // send confirmation email (not finished yet)
+    const confirmationTemplate = await readFileAsync(__dirname + '/email-templates/email-confirm.html')
+
+    const recipientVariables = {}
+    recipientVariables[email] = {
+      username: username,
+    }
+    const mailgunSuccess = await sendConfirmationEmail(api, {
+      tag: 'confirmation-email',
+      from: 'aun@platonos.com',
+      to: [email],
+      subject: '[Platonos] Please confirm your email',
+      text: 'Hi! Please confirm your email',
+      html: confirmationTemplate,
+      recipientVariables,
+    })
+    if (!mailgunSuccess) throw 'Cannot send confirmation email.'
+
     return { data: { id: userId, token, username: createdUsername } }
   } catch (e) {
     console.log(e)
-    return { error: 'An unexpected error occured during signup.' }
+    return { error: 'An unexpected error occured during signup: ' + e}
   }
 }
 
-async function sendConfirmationEmail(api: GraphQLClient, email: string): Promise<boolean> {
+async function sendConfirmationEmail(api: GraphQLClient, variables: { 
+  tag: String, 
+  from: String, 
+  to: [String], 
+  subject: String, 
+  text: String,
+  html: {},
+  recipientVariables: {}
+}): Promise<boolean> {
+
   const mutation = `
-    mutation sendEmail {
-      sendMailgunEmail {
-        tag
+    mutation sendEmail($tag: String!, $from: String!, $to: [String!]!, $subject: String!, $text: String!, $html: String!, $recipientVariables: Json) {
+      sendMailgunEmail (
+        tag: $tag,
+        from: $from,
+        to: $to,
+        subject: $subject,
+        text: $text,
+        html: $html,
+        recipientVariables: $recipientVariables
+      ) {
+        success
       }
     }
   `
+  return api.request<{ sendMailgunEmail }>(mutation, variables)
+    .then(r => r.sendMailgunEmail.success)
 }
 
 async function getUser(api: GraphQLClient, email: string): Promise<{ User }> {

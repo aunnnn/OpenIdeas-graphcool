@@ -30,7 +30,7 @@ export default async (event: FunctionEvent<EventData>) => {
     const token = new Buffer(`api:${process.env['MAILGUN_API_KEY']}`).toString('base64')
     const endpoint = `https://api.mailgun.net/v3/${process.env['MAILGUN_DOMAIN']}/messages`
 
-    const { tag, to, from, subject, text } = event.data
+    const { tag, to, from, subject, text, html } = event.data
     const recipientVariables = event.data.recipientVariables || {}
 
     if (to.length > 1000) {
