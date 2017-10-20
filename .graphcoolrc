@@ -1,3 +1,4 @@
 targets:
   prod: shared-ap-northeast-1/cj8ypa9sx038s018686140dpr
-  default: prod
+  default: dev
+  dev: local/cj909z35d000m0123lufniof2
