@@ -88,7 +88,7 @@ export default async (event: FunctionEvent<EventData>) => {
     }
     const mailgunSuccess = await sendConfirmationEmail(api, {
       tag: 'confirmation-email',
-      from: 'aun@platonos.com',
+      from: 'mail-noreply@platonos.com',
       to: [email],
       subject: '[Platonos] Please confirm your email',
       text: 'Hi! Please confirm your email',
