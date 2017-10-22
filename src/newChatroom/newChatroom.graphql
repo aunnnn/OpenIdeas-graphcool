@@ -1,0 +1,21 @@
+type NewChatroomPayload {
+  id: ID!
+  title: String!
+  createdAt: DateTime!
+  users: [Json!]!
+  invitedUser: Json
+  createdBy: Json!
+  stateType: Int!
+  latestMessagesAt: DateTime!
+  deniedByUserIds: [ID!]!  
+}
+
+extend type Mutation {
+  newChatroom(
+    title: String!, 
+    createdById: ID!, 
+    usersIds: [ID!]!, 
+    invitedUserId: ID!, 
+    latestMessagesAt: DateTime!, 
+    stateType: Int!): NewChatroomPayload
+}

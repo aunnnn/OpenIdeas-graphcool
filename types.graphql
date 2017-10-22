@@ -60,6 +60,7 @@ type User @model {
   chatrooms: [Chatroom!]! @relation(name: "UsersChatrooms")
   createdChatrooms: [Chatroom!]! @relation(name: "UserCreatedChatrooms")
   invitedChatrooms: [Chatroom!]! @relation(name: "UserInvitedChatroom")
+  numberOfTopicsLeft: Int! @defaultValue(value: 0) @migrationValue(value: 0)
 }
 
 
