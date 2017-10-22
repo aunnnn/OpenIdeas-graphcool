@@ -6,6 +6,7 @@ interface User {
   id: string
   password: string
   username: string
+  isAccountVerified: boolean
 }
 
 interface EventData {
@@ -25,12 +26,16 @@ export default async (event: FunctionEvent<EventData>) => {
     const { email, password } = event.data
 
     // get user by email
-    const user: User = await getUserByEmail(api, email)
+    const user = await getUserByEmail(api, email)
       .then(r => r.User)
 
     // no user with this email
     if (!user) {
       return { error: 'Invalid credentials!' }
+    }
+
+    if (!user.isAccountVerified) {
+      return { error: 'Please check your email and click on the confirmation link.' }
     }
 
     // check password
@@ -56,6 +61,7 @@ async function getUserByEmail(api: GraphQLClient, email: string): Promise<{ User
         id
         password
         username
+        isAccountVerified
       }
     }
   `

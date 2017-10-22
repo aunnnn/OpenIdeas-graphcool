@@ -21,6 +21,7 @@ interface sendMailgunEmail {
 const SALT_ROUNDS = 10
 
 const fs = require('fs')
+const crypto = require('crypto')
 
 function readFileAsync(path) {
   return new Promise(function (resolve, reject) {
@@ -48,7 +49,7 @@ export default async (event: FunctionEvent<EventData>) => {
       return { error: 'Not a valid email' }
     }
 
-    if (!username || !/^([a-zA-Z0-9]){4,12}$/.test(username)) {
+    if (!username || !/^([a-zA-Z0-9_]){4,12}$/.test(username)) {
       return { error: 'Username must be between 4-12 characters of numbers or letters.' }
     }
 
@@ -70,7 +71,9 @@ export default async (event: FunctionEvent<EventData>) => {
     const hash = await bcrypt.hash(password, SALT_ROUNDS)
 
     // create new user
-    const { id: userId, username: createdUsername } = await createGraphcoolUser(api, email, hash, username)
+
+    const verificationCode = crypto.randomBytes(20).toString('hex')
+    const { id: userId, username: createdUsername } = await createGraphcoolUser(api, email, hash, username, verificationCode)
 
     // generate node token for new User node
     const token = await graphcool.generateNodeToken(userId, 'User')
@@ -81,6 +84,7 @@ export default async (event: FunctionEvent<EventData>) => {
     const recipientVariables = {}
     recipientVariables[email] = {
       username: username,
+      verificationCode,
     }
     const mailgunSuccess = await sendConfirmationEmail(api, {
       tag: 'confirmation-email',
@@ -96,7 +100,7 @@ export default async (event: FunctionEvent<EventData>) => {
     return { data: { id: userId, token, username: createdUsername } }
   } catch (e) {
     console.log(e)
-    return { error: 'An unexpected error occured during signup'}
+    return { error: 'An unexpected error occured during signup' + e}
   }
 }
 
@@ -161,13 +165,14 @@ async function getUserByUsername(api: GraphQLClient, username: String): Promise<
   return api.request<{ User }>(query, variables)
 }
 
-async function createGraphcoolUser(api: GraphQLClient, email: string, password: string, username: String): Promise<{ id, username }> {
+async function createGraphcoolUser(api: GraphQLClient, email: string, password: string, username: String, verificationCode: String): Promise<{ id, username }> {
   const mutation = `
-    mutation createGraphcoolUser($email: String!, $password: String!, $username: String!) {
+    mutation createGraphcoolUser($email: String!, $password: String!, $username: String!, $verificationCode: String!) {
       createUser(
         email: $email,
         password: $password,
-        username: $username
+        username: $username,
+        verificationCode: $verificationCode,
       ) {
         id
         username
@@ -179,6 +184,7 @@ async function createGraphcoolUser(api: GraphQLClient, email: string, password: 
     email,
     password: password,
     username: username,
+    verificationCode,
   }
 
   return api.request<{ createUser: User }>(mutation, variables)

@@ -1,0 +1,7 @@
+type VerifyUserPayload {
+  username: String!
+}
+
+extend type Mutation {
+  verifyUser(verificationCode: String!): VerifyUserPayload
+}

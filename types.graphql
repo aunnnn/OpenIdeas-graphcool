@@ -61,6 +61,9 @@ type User @model {
   createdChatrooms: [Chatroom!]! @relation(name: "UserCreatedChatrooms")
   invitedChatrooms: [Chatroom!]! @relation(name: "UserInvitedChatroom")
   numberOfTopicsLeft: Int! @defaultValue(value: 0) @migrationValue(value: 0)
+
+  isAccountVerified: Boolean! @defaultValue(value: false) @migrationValue(value: false)
+  verificationCode: String @isUnique
 }
 
 
