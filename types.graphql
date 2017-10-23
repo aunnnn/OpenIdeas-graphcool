@@ -9,19 +9,6 @@ type File @model {
   url: String! @isUnique
 }
 
-# Pre-migration User model
-# type User @model {
-#   createdAt: DateTime!
-#   email: String @isUnique
-#   id: ID! @isUnique
-#   password: String
-#   updatedAt: DateTime!
-#   username: String! @isUnique
-#   chatrooms: [Chatroom!]! @relation(name: "UsersChatrooms")
-#   createdChatrooms: [Chatroom!]! @relation(name: "UserCreatedChatrooms")
-#   invitedChatrooms: [Chatroom!]! @relation(name: "UserInvitedChatroom")
-# }
-
 type Chatroom @model {
   id: ID! @isUnique
   title: String!
@@ -36,6 +23,7 @@ type Chatroom @model {
   invitedUser: User @relation(name: "UserInvitedChatroom")
   latestMessagesAt: DateTime!
   deniedByUserIds: [String!] @defaultValue(value: "[]")
+  savedByUsers: [User!] @relation(name: "UserSavedChatrooms")
 }
 
 type Message @model {
@@ -60,10 +48,11 @@ type User @model {
   chatrooms: [Chatroom!]! @relation(name: "UsersChatrooms")
   createdChatrooms: [Chatroom!]! @relation(name: "UserCreatedChatrooms")
   invitedChatrooms: [Chatroom!]! @relation(name: "UserInvitedChatroom")
-  numberOfTopicsLeft: Int! @defaultValue(value: 0) @migrationValue(value: 0)
+  numberOfTopicsLeft: Int! @defaultValue(value: 0)
 
-  isAccountVerified: Boolean! @defaultValue(value: false) @migrationValue(value: false)
+  isAccountVerified: Boolean! @defaultValue(value: false)
   verificationCode: String @isUnique
+  savedChatrooms: [Chatroom!] @relation(name: "UserSavedChatrooms")
 }
 
 

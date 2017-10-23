@@ -68,5 +68,6 @@ permissions:
 - operation: UserCreatedChatrooms.*
 - operation: UserInvitedChatroom.*
 - operation: UsersChatrooms.*
+- operation: UserSavedChatrooms.*
 rootTokens:
 - testSchemaExtention
