@@ -23,7 +23,18 @@ type Chatroom @model {
   invitedUser: User @relation(name: "UserInvitedChatroom")
   latestMessagesAt: DateTime!
   deniedByUserIds: [String!] @defaultValue(value: "[]")
-  savedByUsers: [User!] @relation(name: "UserSavedChatrooms")
+  savedByUsers: [User!]! @relation(name: "UserSavedChatrooms")
+
+  # Estimated messages count*
+  # Graphcool doesn't support sort by aggregation (_allMessagesMeta) yet, 
+  # so we need to store count in order to sort them (e.g. top 100)
+
+  # this will get updated at the same time as one of the user submit new message (to save # of requests to the server)
+  # The 'estimatedCount' is directly retrieved from the current local cache of messages in that room +1 
+  # (which won't reflect the actual count, e.g, but close enough).
+
+  # A better (but additional request) would be to query the count first, +1, then update, but that's 2 requests per new message
+  estimatedMessagesCount: Int! @defaultValue(value: 0) @migrationValue(value: 0)
 }
 
 type Message @model {
@@ -52,7 +63,7 @@ type User @model {
 
   isAccountVerified: Boolean! @defaultValue(value: false)
   verificationCode: String @isUnique
-  savedChatrooms: [Chatroom!] @relation(name: "UserSavedChatrooms")
+  savedChatrooms: [Chatroom!]! @relation(name: "UserSavedChatrooms")
 }
 
 
